@@ -1,9 +1,17 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateLeadDto {
   @IsNotEmpty({ message: 'El nombre completo es requerido' })
   @IsString({ message: 'El nombre completo debe ser una cadena de texto' })
-  @MaxLength(255, { message: 'El nombre completo no puede exceder 255 caracteres' })
+  @MaxLength(255, {
+    message: 'El nombre completo no puede exceder 255 caracteres',
+  })
   fullName: string;
 
   @IsNotEmpty({ message: 'El email es requerido' })

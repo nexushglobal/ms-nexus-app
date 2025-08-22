@@ -33,9 +33,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ServiceIdentifierInterceptor(APP_SERVICE));
 
   await app.listen();
-  console.log(
-    `🚀 Microservice APP running with NATS on ${envs.NATS_SERVERS}`,
-  );
+  console.log(`🚀 Microservice APP running with NATS on ${envs.NATS_SERVERS}`);
 }
 
 bootstrap().catch((err) => {

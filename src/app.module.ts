@@ -4,6 +4,8 @@ import { databaseConfig } from './config/database.config';
 import { CommonModule } from './common/common.module';
 import { BannerModule } from './banner/banner.module';
 import { LeadModule } from './lead/lead.module';
+import { ComplaintsBookModule } from './complaints-book/complaints-book.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -12,8 +14,9 @@ import { LeadModule } from './lead/lead.module';
     }),
     CommonModule,
     BannerModule,
-    LeadModule
-
+    LeadModule,
+    ComplaintsBookModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [],

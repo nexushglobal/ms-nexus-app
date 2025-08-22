@@ -17,11 +17,8 @@ export class LeadService {
 
   async createOrUpdateLead(createLeadDto: CreateLeadDto): Promise<Lead> {
     // Check if lead exists by email or telefono
-    let existingLead = await this.leadRepository.findOne({
-      where: [
-        { email: createLeadDto.email },
-        { phone: createLeadDto.phone }
-      ]
+    const existingLead = await this.leadRepository.findOne({
+      where: [{ email: createLeadDto.email }, { phone: createLeadDto.phone }],
     });
 
     if (existingLead) {
@@ -39,7 +36,7 @@ export class LeadService {
       existingLead.email = createLeadDto.email;
       existingLead.phone = createLeadDto.phone;
       existingLead.message = createLeadDto.message;
-      
+
       // Add previous record to metadata
       if (!existingLead.metadata) {
         existingLead.metadata = {};
@@ -57,7 +54,9 @@ export class LeadService {
     }
   }
 
-  async findLeadsWithPagination(findLeadsDto: FindLeadsDto): Promise<Paginated<Lead>> {
+  async findLeadsWithPagination(
+    findLeadsDto: FindLeadsDto,
+  ): Promise<Paginated<Lead>> {
     const queryBuilder = this.leadRepository
       .createQueryBuilder('lead')
       .orderBy('lead.updatedAt', 'DESC');
@@ -93,18 +92,29 @@ export class LeadService {
     const leads = await queryBuilder.getMany();
 
     // Generate CSV content
-    const csvHeaders = ['ID', 'Nombre Completo', 'Email', 'Teléfono', 'Mensaje', 'Fecha Creación', 'Fecha Actualización'];
-    const csvRows = leads.map(lead => [
+    const csvHeaders = [
+      'ID',
+      'Nombre Completo',
+      'Email',
+      'Teléfono',
+      'Mensaje',
+      'Fecha Creación',
+      'Fecha Actualización',
+    ];
+    const csvRows = leads.map((lead) => [
       lead.id.toString(),
       `"${lead.fullName}"`,
       `"${lead.email}"`,
       `"${lead.phone}"`,
       `"${lead.message || ''}"`,
       `"${lead.createdAt.toISOString()}"`,
-      `"${lead.updatedAt.toISOString()}"`
+      `"${lead.updatedAt.toISOString()}"`,
     ]);
 
-    const csvContent = [csvHeaders.join(','), ...csvRows.map(row => row.join(','))].join('\n');
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvRows.map((row) => row.join(',')),
+    ].join('\n');
     return Buffer.from(csvContent, 'utf-8');
   }
 }

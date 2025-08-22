@@ -22,5 +22,5 @@ export class ActiveBannerResponseDto {
   description?: string;
   link?: string;
   linkType?: BannerLinkType;
-  order?: number ;
+  order?: number;
 }

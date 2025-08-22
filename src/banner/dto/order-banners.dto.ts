@@ -1,4 +1,3 @@
-
 export class BannerOrderItem {
   id: number;
   order: number;

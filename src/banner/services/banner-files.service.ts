@@ -32,7 +32,10 @@ export class BannerFilesService {
     };
 
     return await firstValueFrom(
-      this.integrationClient.send({ cmd: 'integration.files.uploadImage' }, payload),
+      this.integrationClient.send(
+        { cmd: 'integration.files.uploadImage' },
+        payload,
+      ),
     );
   }
 
