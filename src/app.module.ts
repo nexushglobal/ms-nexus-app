@@ -6,12 +6,14 @@ import { BannerModule } from './banner/banner.module';
 import { LeadModule } from './lead/lead.module';
 import { ComplaintsBookModule } from './complaints-book/complaints-book.module';
 import { ReportModule } from './report/report.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: () => databaseConfig,
     }),
+    MessagingModule.register(),
     CommonModule,
     BannerModule,
     LeadModule,
