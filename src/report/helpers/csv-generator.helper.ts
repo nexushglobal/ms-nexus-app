@@ -6,8 +6,8 @@ export class CsvGeneratorHelper {
       return 'ID,PLAN_NAME,EMAIL,FIRSTNAME,LASTNAME,FULLNAME,PHONE,CREATED\n';
     }
 
-    const headers = 'ID,PLAN_NAME,EMAIL,FIRSTNAME,LASTNAME,FULLNAME,PHONE,CREATED\n';
-    
+    const headers = 'ID,PLAN_NAME,EMAIL,FIRSTNAME,LASTNAME,FULLNAME,PHONE,CREATED,NOTE\n';
+
     const rows = data.map(item => {
       return [
         item.id,
@@ -17,7 +17,8 @@ export class CsvGeneratorHelper {
         this.escapeCsvField(item.lastName),
         this.escapeCsvField(item.fullName),
         this.escapeCsvField(item.phone),
-        this.formatDate(item.created)
+        this.formatDate(item.created),
+        this.escapeCsvField(item.note)
       ].join(',');
     });
 

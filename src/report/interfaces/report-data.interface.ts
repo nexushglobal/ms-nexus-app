@@ -7,6 +7,7 @@ export interface MembershipSubscriptionData {
   fullName: string;
   phone: string;
   created: Date;
+  note:string;
 }
 
 export interface PaymentReportData {
