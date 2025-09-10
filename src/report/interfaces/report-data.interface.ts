@@ -19,3 +19,14 @@ export interface PaymentReportData {
   created: Date;
   paymentMethod: string;
 }
+
+export interface UserRegistrationData {
+  name: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  age: number;
+  document: string;
+  typedocument: string;
+  createdAt: Date;
+}
