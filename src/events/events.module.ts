@@ -7,10 +7,12 @@ import { Event } from './entities/event.entity';
 import { EventFilesService } from './services/event-files.service';
 import { envs } from '../config/envs';
 import { INTEGRATION_SERVICE } from '../config/services';
+import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event]),
+    CommonModule,
     ClientsModule.register([
       {
         name: INTEGRATION_SERVICE,

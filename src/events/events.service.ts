@@ -14,6 +14,8 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { paginate } from '../common/helpers/paginate.helper';
 import { EventFilesService } from './services/event-files.service';
 import { SerializedFile } from './interfaces/serialized-file.interface';
+import { MembershipService } from '../common/services/membership.service';
+import { MembershipStatus } from '../common/enums/status-membership.enum';
 
 @Injectable()
 export class EventsService {
@@ -21,6 +23,7 @@ export class EventsService {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly eventFilesService: EventFilesService,
+    private readonly membershipService: MembershipService,
   ) {}
 
   async create(
@@ -143,8 +146,11 @@ export class EventsService {
     return this.mapToResponseDto(updatedEvent);
   }
 
-  async findAvailableEvents(): Promise<PublicEventResponseDto[]> {
+  async findAvailableEvents(userId: string): Promise<PublicEventResponseDto[]> {
     const now = new Date();
+
+    const userMembershipInfo =
+      await this.membershipService.getUserMembershipInfo(userId);
 
     const availableEvents = await this.eventRepository
       .createQueryBuilder('event')
@@ -153,10 +159,18 @@ export class EventsService {
       .orderBy('event.startDate', 'ASC')
       .getMany();
 
-    return availableEvents.map((event) => this.mapToPublicResponseDto(event));
+    const hasActiveMembership =
+      userMembershipInfo.status === MembershipStatus.ACTIVE;
+
+    return availableEvents.map((event) =>
+      this.mapToPublicResponseDto(event, hasActiveMembership),
+    );
   }
 
-  async findAvailableEventById(id: number): Promise<PublicEventResponseDto> {
+  async findAvailableEventById(
+    id: number,
+    userId: string,
+  ): Promise<PublicEventResponseDto> {
     const event = await this.eventRepository.findOne({
       where: { id, status: EventStatus.ACTIVO },
     });
@@ -176,7 +190,13 @@ export class EventsService {
       });
     }
 
-    return this.mapToPublicResponseDto(event);
+    const userMembershipInfo =
+      await this.membershipService.getUserMembershipInfo(userId);
+
+    const hasActiveMembership =
+      userMembershipInfo.status === MembershipStatus.ACTIVE;
+
+    return this.mapToPublicResponseDto(event, hasActiveMembership);
   }
 
   private extractKeyFromUrl(url: string): string | null {
@@ -202,20 +222,35 @@ export class EventsService {
       publicPrice: event.publicPrice,
       status: event.status,
       createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
     };
   }
 
-  private mapToPublicResponseDto(event: Event): PublicEventResponseDto {
-    return {
-      id: event.id,
-      name: event.name,
-      description: event.description,
-      imageUrl: event.imageUrl,
-      startDate: event.startDate,
-      endDate: event.endDate,
-      memberPrice: event.memberPrice,
-      publicPrice: event.publicPrice,
-    };
+  private mapToPublicResponseDto(
+    event: Event,
+    hasActiveMembership: boolean,
+  ): PublicEventResponseDto {
+    if (hasActiveMembership) {
+      return {
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        imageUrl: event.imageUrl,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        price: event.memberPrice,
+        priceOff: event.publicPrice,
+      };
+    } else {
+      return {
+        id: event.id,
+        name: event.name,
+        description: event.description,
+        imageUrl: event.imageUrl,
+        startDate: event.startDate,
+        endDate: event.endDate,
+        price: event.publicPrice,
+        priceOff: null,
+      };
+    }
   }
 }

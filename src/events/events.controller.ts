@@ -74,14 +74,19 @@ export class EventsController {
   // CLIENT ENDPOINTS
 
   @MessagePattern('event.findAvailableEvents')
-  async findAvailableEvents(): Promise<PublicEventResponseDto[]> {
-    return await this.eventsService.findAvailableEvents();
+  async findAvailableEvents(
+    @Payload() payload: { userId: string },
+  ): Promise<PublicEventResponseDto[]> {
+    return await this.eventsService.findAvailableEvents(payload.userId);
   }
 
   @MessagePattern('event.findAvailableEventById')
   async findAvailableEventById(
-    @Payload() payload: { id: number },
+    @Payload() payload: { id: number; userId: string },
   ): Promise<PublicEventResponseDto> {
-    return await this.eventsService.findAvailableEventById(payload.id);
+    return await this.eventsService.findAvailableEventById(
+      payload.id,
+      payload.userId,
+    );
   }
 }
