@@ -7,6 +7,8 @@ import { LeadModule } from './lead/lead.module';
 import { ComplaintsBookModule } from './complaints-book/complaints-book.module';
 import { ReportModule } from './report/report.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { EventsModule } from './events/events.module';
+import { TicketsModule } from './tickets/tickets.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { MessagingModule } from './messaging/messaging.module';
     LeadModule,
     ComplaintsBookModule,
     ReportModule,
+    EventsModule,
+    TicketsModule,
   ],
   controllers: [],
   providers: [],
