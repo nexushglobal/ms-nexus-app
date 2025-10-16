@@ -8,18 +8,21 @@ import { FindAllReportsDto, FindAllReportsResponseDto, ReportResponseDto } from 
 import { FindOneReportDto, FindOneReportResponseDto } from './dto/find-one-report.dto';
 import { UpdateReportDto, UpdateReportResponseDto } from './dto/update-report.dto';
 import { UpdateReportStatusDto, UpdateReportStatusResponseDto } from './dto/update-report-status.dto';
-import { GenerateReportDto, ReportCode } from './dto/generate-report.dto';
+import { GenerateReportDto } from './dto/generate-report.dto';
 import { MembershipService } from 'src/common/services/membership.service';
 import { PaymentService } from 'src/common/services/payment.service';
-import { CsvGeneratorHelper } from './helpers/csv-generator.helper';
+import { UserService } from 'src/common/services/user.service';
+import { ExcelGeneratorHelper } from './helpers/excel-generator.helper';
 
 @Injectable()
 export class ReportService {
+  private readonly logger = console; // Replace with a proper logger if needed
   constructor(
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
     private readonly membershipService: MembershipService,
     private readonly paymentService: PaymentService,
+    private readonly userService: UserService,
   ) {}
 
   async createReport(createReportDto: CreateReportDto): Promise<CreateReportResponseDto> {
@@ -201,17 +204,23 @@ export class ReportService {
     }
   }
 
-  async generateReport(generateReportDto: GenerateReportDto): Promise<string> {
+  async generateReport(generateReportDto: GenerateReportDto): Promise<Buffer> {
     try {
       switch (generateReportDto.reportCode) {
-        case ReportCode.RSU:
+        case 'RSU':
           return await this.generateMembershipSubscriptionsReport(
             generateReportDto.startDate,
             generateReportDto.endDate,
           );
-        
-        case ReportCode.RPA:
+
+        case 'RPA':
           return await this.generatePaymentsReport(
+            generateReportDto.startDate,
+            generateReportDto.endDate,
+          );
+
+        case 'RRU':
+          return await this.generateUserRegistrationReport(
             generateReportDto.startDate,
             generateReportDto.endDate,
           );
@@ -236,13 +245,13 @@ export class ReportService {
   private async generateMembershipSubscriptionsReport(
     startDate?: string,
     endDate?: string,
-  ): Promise<string> {
+  ): Promise<Buffer> {
     try {
       const data = await this.membershipService.getMembershipSubscriptions(
         startDate,
         endDate,
       );
-      return CsvGeneratorHelper.generateMembershipSubscriptionsCSV(data);
+      return await ExcelGeneratorHelper.generateMembershipSubscriptionsExcel(data);
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
@@ -254,17 +263,35 @@ export class ReportService {
   private async generatePaymentsReport(
     startDate?: string,
     endDate?: string,
-  ): Promise<string> {
+  ): Promise<Buffer> {
     try {
       const data = await this.paymentService.getPaymentsReport(
         startDate,
         endDate,
       );
-      return CsvGeneratorHelper.generatePaymentReportCSV(data);
+      return await ExcelGeneratorHelper.generatePaymentReportExcel(data);
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Error al generar el reporte de pagos',
+      });
+    }
+  }
+
+  private async generateUserRegistrationReport(
+    startDate?: string,
+    endDate?: string,
+  ): Promise<Buffer> {
+    try {
+      const data = await this.userService.getRegisterUser(
+        startDate,
+        endDate,
+      );
+      return await ExcelGeneratorHelper.generateUserRegistrationReportExcel(data);
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Error al generar el reporte de registro de usuarios',
       });
     }
   }
@@ -275,29 +302,24 @@ export class ReportService {
     filename: string;
   }> {
     try {
-      const csvData = await this.generateReport(generateReportDto);
+      const excelBuffer = await this.generateReport(generateReportDto);
 
       // Determinar el nombre del archivo basado en el código del reporte
       const reportNames = {
-        [ReportCode.RSU]: 'Reporte_Suscripciones_Membresias',
-        [ReportCode.RPA]: 'Reporte_Pagos_Aprobados',
+        'RSU': 'Reporte_Suscripciones_Membresias',
+        'RPA': 'Reporte_Pagos_Aprobados',
+        'RRU': 'Reporte_Registro_Usuarios',
       };
 
-      const filename = `${reportNames[generateReportDto.reportCode]}_${new Date().toISOString().split('T')[0]}.csv`;
-
-      // Agregar BOM para UTF-8 para mejor compatibilidad con Excel
-      const bom = '\ufeff';
-      const csvWithBom = bom + csvData;
-      
-      // Convertir string a buffer
-      const buffer = Buffer.from(csvWithBom, 'utf8');
+      const filename = `${reportNames[generateReportDto.reportCode]}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
       return {
-        buffer: Array.from(buffer),
-        contentType: 'text/csv; charset=utf-8',
+        buffer: Array.from(excelBuffer),
+        contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         filename,
       };
     } catch (error) {
+      this.logger.error('Error al generar el archivo de reporte', error);
       if (error instanceof RpcException) {
         throw error;
       }

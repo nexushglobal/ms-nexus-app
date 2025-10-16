@@ -7,6 +7,7 @@ export interface MembershipSubscriptionData {
   fullName: string;
   phone: string;
   created: Date;
+  note:string;
 }
 
 export interface PaymentReportData {
@@ -17,4 +18,15 @@ export interface PaymentReportData {
   email: string;
   created: Date;
   paymentMethod: string;
+}
+
+export interface UserRegistrationData {
+  name: string;
+  lastname: string;
+  email: string;
+  phone: string;
+  age: number;
+  document: string;
+  typedocument: string;
+  createdAt: Date;
 }
