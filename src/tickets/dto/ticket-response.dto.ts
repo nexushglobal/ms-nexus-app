@@ -1,8 +1,8 @@
-import { PaymentMethod } from '../entities/ticket.entity';
+import { PaymentMethod } from './purchase-ticket.dto';
 
 export class TicketResponseDto {
   id: number;
-  qrCodeUrl: string;
+  qrCodeUrl: string | null;
   attended: boolean;
   userId: string;
   userName: string;
@@ -17,7 +17,7 @@ export class TicketResponseDto {
 
 export class UserTicketResponseDto {
   id: number;
-  qrCodeUrl: string;
+  qrCodeUrl: string | null;
   attended: boolean;
   pricePaid: number;
   eventId: number;

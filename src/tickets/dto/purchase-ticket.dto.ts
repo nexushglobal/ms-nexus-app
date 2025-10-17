@@ -1,6 +1,18 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsPositive, IsString } from 'class-validator';
-import { PaymentMethod } from '../entities/ticket.entity';
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
+
+export enum PaymentMethod {
+  VOUCHER = 'VOUCHER',
+  POINTS = 'POINTS',
+  PAYMENT_GATEWAY = 'PAYMENT_GATEWAY',
+}
 
 export class PurchaseTicketDto {
   @IsNumber()
@@ -18,7 +30,7 @@ export class PurchaseTicketDto {
   userEmail: string;
 
   @IsEnum(PaymentMethod, {
-    message: 'The payment method must be a valid PaymentMethod',
+    message: 'The payment method must be VOUCHER, POINTS or PAYMENT_GATEWAY',
   })
   paymentMethod: PaymentMethod;
 
@@ -26,4 +38,14 @@ export class PurchaseTicketDto {
   @IsPositive()
   @Type(() => Number)
   pricePaid: number;
+
+  // Para VOUCHER
+  @IsOptional()
+  @IsArray()
+  payments?: any[];
+
+  // Para PAYMENT_GATEWAY (Culqi)
+  @IsOptional()
+  @IsString()
+  source_id?: string;
 }

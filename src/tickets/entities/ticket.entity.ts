@@ -8,12 +8,12 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Event } from '../../events/entities/event.entity';
+import { PaymentMethod } from '../dto/purchase-ticket.dto';
 
-export enum PaymentMethod {
-  CREDIT_CARD = 'CREDIT_CARD',
-  DEBIT_CARD = 'DEBIT_CARD',
-  TRANSFER = 'TRANSFER',
-  CASH = 'CASH',
+export enum TicketStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  CANCELLED = 'CANCELLED',
 }
 
 @Entity('tickets')
@@ -21,11 +21,21 @@ export class Ticket {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 500 })
-  qrCodeUrl: string;
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  qrCodeUrl: string | null;
 
   @Column({ type: 'boolean', default: false })
   attended: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: TicketStatus,
+    default: TicketStatus.PENDING,
+  })
+  status: TicketStatus;
+
+  @Column({ type: 'int', nullable: true, name: 'payment_id' })
+  paymentId: number;
 
   @Column({ type: 'varchar', length: 100 })
   userId: string;
@@ -36,14 +46,14 @@ export class Ticket {
   @Column({ type: 'varchar', length: 255 })
   userEmail: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  pricePaid: number;
+
   @Column({
     type: 'enum',
     enum: PaymentMethod,
   })
   paymentMethod: PaymentMethod;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
-  pricePaid: number;
 
   @Column({ type: 'int' })
   eventId: number;
